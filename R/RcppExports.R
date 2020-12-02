@@ -28,27 +28,43 @@ c_Xstar <- function(Xs) {
     .Call('_SSGL615_c_Xstar', PACKAGE = 'SSGL615', Xs)
 }
 
-c_which2 <- function(groups, g) {
-    .Call('_SSGL615_c_which2', PACKAGE = 'SSGL615', groups, g)
-}
-
-c_which3 <- function(beta, active) {
-    .Call('_SSGL615_c_which3', PACKAGE = 'SSGL615', beta, active)
+c_which2 <- function(v) {
+    .Call('_SSGL615_c_which2', PACKAGE = 'SSGL615', v)
 }
 
 matrix_subset_idx_rcpp2 <- function(x, y) {
     .Call('_SSGL615_matrix_subset_idx_rcpp2', PACKAGE = 'SSGL615', x, y)
 }
 
-which4 <- function(x, active) {
-    .Call('_SSGL615_which4', PACKAGE = 'SSGL615', x, active)
+matrix_assign_rcpp2 <- function(X, Y, id) {
+    .Call('_SSGL615_matrix_assign_rcpp2', PACKAGE = 'SSGL615', X, Y, id)
+}
+
+vector_assign_rcpp2 <- function(X, Y, id) {
+    .Call('_SSGL615_vector_assign_rcpp2', PACKAGE = 'SSGL615', X, Y, id)
 }
 
 vector_subset_idx_rcpp2 <- function(x, y) {
     .Call('_SSGL615_vector_subset_idx_rcpp2', PACKAGE = 'SSGL615', x, y)
 }
 
-update <- function(Y, Xtilde, groups, sigmasq, beta, intercept, lambda0_base, Z, theta, G, forceGroups) {
-    .Call('_SSGL615_update', PACKAGE = 'SSGL615', Y, Xtilde, groups, sigmasq, beta, intercept, lambda0_base, Z, theta, G, forceGroups)
+c_betainact <- function(beta, active) {
+    .Call('_SSGL615_c_betainact', PACKAGE = 'SSGL615', beta, active)
+}
+
+psi <- function(beta, lambda) {
+    .Call('_SSGL615_psi', PACKAGE = 'SSGL615', beta, lambda)
+}
+
+pStar <- function(beta, lambda1, lambda0, theta) {
+    .Call('_SSGL615_pStar', PACKAGE = 'SSGL615', beta, lambda1, lambda0, theta)
+}
+
+c_gFunc <- function(beta, lambda1, lambda0, theta, sigmasq, n) {
+    .Call('_SSGL615_c_gFunc', PACKAGE = 'SSGL615', beta, lambda1, lambda0, theta, sigmasq, n)
+}
+
+update <- function(Y, Xtilde, groups, updateSigma, sigmasq, beta, intercept, lambda0_base, lambda1, lambda0, betaOld, a, b, M, Z, theta, G, forceGroups, n) {
+    .Call('_SSGL615_update', PACKAGE = 'SSGL615', Y, Xtilde, groups, updateSigma, sigmasq, beta, intercept, lambda0_base, lambda1, lambda0, betaOld, a, b, M, Z, theta, G, forceGroups, n)
 }
 
