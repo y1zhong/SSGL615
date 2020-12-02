@@ -66,17 +66,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// c_Xstar
-NumericMatrix c_Xstar(NumericMatrix Xs);
-RcppExport SEXP _SSGL615_c_Xstar(SEXP XsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type Xs(XsSEXP);
-    rcpp_result_gen = Rcpp::wrap(c_Xstar(Xs));
-    return rcpp_result_gen;
-END_RCPP
-}
 // c_which2
 NumericVector c_which2(LogicalVector v);
 RcppExport SEXP _SSGL615_c_which2(SEXP vSEXP) {
@@ -135,6 +124,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     rcpp_result_gen = Rcpp::wrap(vector_subset_idx_rcpp2(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// c_Xstar
+NumericMatrix c_Xstar(NumericMatrix Xs);
+RcppExport SEXP _SSGL615_c_Xstar(SEXP XsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type Xs(XsSEXP);
+    rcpp_result_gen = Rcpp::wrap(c_Xstar(Xs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -228,12 +228,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SSGL615_c_crossprod", (DL_FUNC) &_SSGL615_c_crossprod, 1},
     {"_SSGL615_matrix_subset_idx_rcpp", (DL_FUNC) &_SSGL615_matrix_subset_idx_rcpp, 2},
     {"_SSGL615_c_Xtilde", (DL_FUNC) &_SSGL615_c_Xtilde, 4},
-    {"_SSGL615_c_Xstar", (DL_FUNC) &_SSGL615_c_Xstar, 1},
     {"_SSGL615_c_which2", (DL_FUNC) &_SSGL615_c_which2, 1},
     {"_SSGL615_matrix_subset_idx_rcpp2", (DL_FUNC) &_SSGL615_matrix_subset_idx_rcpp2, 2},
     {"_SSGL615_matrix_assign_rcpp2", (DL_FUNC) &_SSGL615_matrix_assign_rcpp2, 3},
     {"_SSGL615_vector_assign_rcpp2", (DL_FUNC) &_SSGL615_vector_assign_rcpp2, 3},
     {"_SSGL615_vector_subset_idx_rcpp2", (DL_FUNC) &_SSGL615_vector_subset_idx_rcpp2, 2},
+    {"_SSGL615_c_Xstar", (DL_FUNC) &_SSGL615_c_Xstar, 1},
     {"_SSGL615_c_betainact", (DL_FUNC) &_SSGL615_c_betainact, 2},
     {"_SSGL615_psi", (DL_FUNC) &_SSGL615_psi, 2},
     {"_SSGL615_pStar", (DL_FUNC) &_SSGL615_pStar, 4},

@@ -23,11 +23,6 @@ c_Xtilde <- function(Xstar, groups, G, n) {
     .Call('_SSGL615_c_Xtilde', PACKAGE = 'SSGL615', Xstar, groups, G, n)
 }
 
-#' @export
-c_Xstar <- function(Xs) {
-    .Call('_SSGL615_c_Xstar', PACKAGE = 'SSGL615', Xs)
-}
-
 c_which2 <- function(v) {
     .Call('_SSGL615_c_which2', PACKAGE = 'SSGL615', v)
 }
@@ -46,6 +41,11 @@ vector_assign_rcpp2 <- function(X, Y, id) {
 
 vector_subset_idx_rcpp2 <- function(x, y) {
     .Call('_SSGL615_vector_subset_idx_rcpp2', PACKAGE = 'SSGL615', x, y)
+}
+
+#' @export
+c_Xstar <- function(Xs) {
+    .Call('_SSGL615_c_Xstar', PACKAGE = 'SSGL615', Xs)
 }
 
 c_betainact <- function(beta, active) {

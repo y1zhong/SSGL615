@@ -77,8 +77,9 @@ SSGL <- function(Y, X, lambda1, lambda0, groups,
   counter = 0
 
   lambda0_base = lambda0
-  sourceCpp('src/update.cpp')
   forceGroups = numeric()
+  sourceCpp('src/update.cpp')
+
 system.time(while(diff > error & counter < 300) {
 
     ## Store an old beta so we can check for convergence at the end
@@ -137,7 +138,6 @@ system.time(while(diff > error & counter < 300) {
     }
 
     counter = counter + 1
-
  })
   ## need to re-standardize the variables
   betaSD = rep(NA, length(beta))

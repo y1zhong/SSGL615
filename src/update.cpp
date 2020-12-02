@@ -10,64 +10,7 @@ using namespace arma;
 //   http://adv-r.had.co.nz/Rcpp.html
 //   http://gallery.rcpp.org/
 //
-// [[Rcpp::export]]
-NumericVector c_which2(LogicalVector v){
-  // calling rnorm()
-  Function f("which");
 
-  // Next code is interpreted as rnorm(n=5, mean=10, sd=2)
-  return f(v);
-}
-
-// [[Rcpp::export]]
-NumericMatrix matrix_subset_idx_rcpp2(
-    NumericMatrix x, NumericVector y) {
-
-  int n_cols_out = y.size();
-  NumericMatrix out = no_init(x.nrow(), n_cols_out);
-  for(unsigned int z = 0; z < n_cols_out; ++z) {
-    out(_, z) = x(_, y[z]);
-  }
-  return out;
-}
-// [[Rcpp::export]]
-NumericMatrix matrix_assign_rcpp2(
-    NumericMatrix X, NumericMatrix Y, NumericVector id) {
-
-  int l = id.length();
-  for(unsigned int z = 0; z < l; z++) {
-    int pos = id[z];
-    NumericMatrix::Column col = X( _ , pos);
-    col = Y(_,z);
-  }
-  return X;
-}
-// [[Rcpp::export]]
-NumericVector vector_assign_rcpp2(
-    NumericVector X, NumericVector Y, NumericVector id) {
-
-  int l = id.length();
-
-  for(unsigned int z = 0; z < l; z++) {
-    int pos = id[z];
-    X[pos] = Y[z];
-  }
-  return X;
-}
-
-
-// [[Rcpp::export]]
-NumericVector vector_subset_idx_rcpp2(
-    NumericVector x, NumericVector y) {
-
-  int l = y.length();
-  NumericVector out;
-  for(unsigned int z = 0; z < l; z++) {
-    int id = y[z];
-    out.push_back(x[id]);
-  }
-  return out;
-}
 
 // [[Rcpp::export]]
 LogicalVector c_betainact(
@@ -137,160 +80,162 @@ List update(NumericVector Y, NumericMatrix Xtilde, NumericVector groups, Logical
             double lambda1, double lambda0, NumericVector betaOld, double a, double b, int M,
             LogicalVector Z, double theta, int G, IntegerVector forceGroups, double n){
   //Rcout << "The begin " << std::endl;
-  //NumericMatrix Ytemp( 2 , 3 , v.begin() );
   //mat Ymat = as<mat>(Y);
   //Rcout << "The Y is " << Ymat << std::endl;
   beta = clone(beta);
   NumericVector yResid;
-  //mat Xtildemat = as<mat>(Xtilde);
+
+  int act2int;
   double diff;
+  double delta;
+
+  vec betaVec = as<vec>(beta);
+  vec betaVecAct2;
+
+  uvec active2uvec;
+  uvec activeuvec;
+
+  NumericVector active;
+  NumericVector active2;
+
+  mat XtildeMat = as<mat>(Xtilde);
+  mat XtildeMatAct;
+  mat XtildeMatAct2;
+  mat zg;
+
+  NumericMatrix XtildeBeta;
 
   for(int g = 0; g < G; g++){
     //Rcout << "The g is " << g << std::endl;
-    NumericVector active2 = c_which2(beta!=0);
-    int act2 = active2[0];
-    vec betaAct2Vec = as<vec>(vector_subset_idx_rcpp2(beta, active2-1));
-    mat XtildeAct2Mat = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active2-1));
-    NumericMatrix tempinter= wrap(XtildeAct2Mat * betaAct2Vec);
+    active2uvec = find(betaVec!=0)+1;
+    active2 = wrap(active2uvec);
+    //Rcout << "The active2 is " << active2 << std::endl;
+
+   // Col id = as<Col>(active2);
+    //Rcout << "The id is " << id << std::endl;
 
     /////////////////////Intercept//////////////////////
     //Rcout << "The active2 is " << active2 << std::endl;
     if (active2.length() == 0) {
       intercept = mean(Y);
     } else if (active2.length() == 1) {
-      intercept = mean(Y - Xtilde(_,act2) * beta[act2]);
+      act2int = active2[0];
+      intercept = mean(Y - Xtilde(_,act2int) * beta[act2int]);
     } else {
-      //vec tempXX = as<vec>(vector_subset_idx_rcpp2(beta, active2-1));
-      //mat tempXtilde = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active2-1));
-      //NumericVector tempXX = vector_subset_idx_rcpp2(beta, active2-1);
-      //NumericMatrix tempXtilde = matrix_subset_idx_rcpp2(Xtilde, active2-1);
-      //NumericMatrix tempinter= wrap(tempXtilde * tempXX);
-      //NumericMatrix tempinter= wrap(XtildeAct2Mat * betaAct2Vec);
-      intercept = mean(Y - tempinter(_,0));
+      XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
+      betaVecAct2 = betaVec.elem(active2uvec-1);
+      XtildeBeta= wrap(XtildeMatAct2 * betaVecAct2);
+      intercept = mean(Y - XtildeBeta(_,0));
     }
 
     // which parameters refer to this group
-    NumericVector active = c_which2(groups==(g+1));
+    activeuvec = find(as<vec>(groups)==(g+1))+1;
+    active = wrap(activeuvec);
     //Rcout << "The active is " << active << std::endl;
     int m = active.length();
     lambda0 = sqrt(m) * lambda0_base;
     //Rcout << "The lambda0 is " << lambda0 << std::endl;
 
-
-
     if ( std::find(forceGroups.begin(), forceGroups.end(), (g+1)) != forceGroups.end() ) {
       LogicalVector v = c_betainact(beta, active);
-      active2 = c_which2(v);
+      uvec active2uvec = find(as<vec>(v))+1;
+      active2 = wrap(active2uvec);
       if (active2.length() == 0) {
         yResid = Y - intercept;
       } else if (active2.length() == 1) {
-        act2 = active2[0];
-        yResid = Y - intercept - Xtilde(_,act2) * beta[act2];
+        act2int = active2[0];
+        yResid = Y - intercept - Xtilde(_,act2int) * beta[act2int];
       } else {
-        //vec tempXX = as<vec>(vector_subset_idx_rcpp2(beta, active2-1));
-       // mat tempXtilde = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active2-1));
-       // mat XXmul = tempXX * tempXtilde;
-       // NumericMatrix XXmulmtx = wrap(XXmul);
-        yResid = Y - intercept - tempinter(_,0);
+        XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
+        betaVecAct2 = betaVec.elem(active2uvec-1);
+        XtildeBeta= wrap(XtildeMatAct2 * betaVecAct2);
+        yResid = Y - intercept - XtildeBeta(_,0);
       }
       //Rcout << "update Beta1 " << std::endl;
-      mat tempXtilde = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active-1));
+      XtildeMatAct = XtildeMat.cols(activeuvec-1);
       //Rcout << "tempXtildecrossp " << std::endl;
-      mat tempXtildecrossp = tempXtilde.t() * tempXtilde;
-     // Rcout << "tempXtildeyRes" << std::endl;
-      mat tempXtildeyRes = tempXtilde.t() * as<vec>(yResid);
-     //Rcout << "tempupdate" << std::endl;
-      NumericMatrix tempupdate = wrap(tempXtildecrossp * tempXtildeyRes);
-      NumericVector betatobeupdate = tempupdate(_,0);
-      beta = vector_assign_rcpp2(beta, betatobeupdate, active-1);
+      mat XtildeMatActCrossInv = inv(XtildeMatAct.t() * XtildeMatAct);
+      // Rcout << "tempXtildeyRes" << std::endl;
+      mat XildeMatActyResid = XtildeMatAct.t() * as<vec>(yResid);
+      //Rcout << "tempupdate" << std::endl;
+      mat tempupdate = XtildeMatActCrossInv * XildeMatActyResid;
+      vec betatobeupdate = tempupdate.col(0);
+      betaVec.elem(activeuvec-1) = betatobeupdate;
+      beta = wrap(betaVec);
     } else {
       //Calculate delta for this size of a group
       //Rcout << "call gFunc " << std::endl;
-      NumericVector beta2(active.length());
+      NumericVector beta2(m);
       double gf = c_gFunc(beta2, lambda1, lambda0, theta, sigmasq, n);
       //Rcout << "The gf is " << gf << std::endl;
-      double delta;
-      NumericVector beta3(m);
       if (gf > 0) {
-        double pstarr = pStar(beta3, lambda1, lambda0, theta);
+        double pstarr = pStar(beta2, lambda1, lambda0, theta);
         delta =  sqrt(2*n*sigmasq*log(1/pstarr)) + sigmasq*lambda1;
       } else {
-       // Rcout << "The sigmasq is " << sigmasq<< std::endl;
-        double lambdaStarr = lambdaStar(beta3, lambda1, lambda0, theta);
-       // Rcout << "The lambdaStarr is " << lambdaStarr << std::endl;
+        // Rcout << "The sigmasq is " << sigmasq<< std::endl;
+        double lambdaStarr = lambdaStar(beta2, lambda1, lambda0, theta);
+        // Rcout << "The lambdaStarr is " << lambdaStarr << std::endl;
         delta = sigmasq*lambdaStarr;
       }
 
       //////////////////Calculate necessary quantities/////////////
-     // Rcout << "The delta is " << delta << std::endl;
+     //  Rcout << "The delta is " << delta << std::endl;
       LogicalVector v = c_betainact(beta, active);
-      active2 = c_which2(v);
+      uvec active2uvec = find(as<vec>(v))+1;
+      active2 = wrap(active2uvec);
       //Rcout << "The active2 is " << active2 << std::endl;
+
       NumericVector yMinInter = Y - intercept;
       //Rcout << "calculate yMinInter " << yMinInter <<std::endl;
       vec tempyMinInter = as<vec>(yMinInter);
-      mat XtildeActMat = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active-1));
-      //mat tempXtilde2 = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active2-1));
-      //mat tempbeta = as<mat>(beta[active2]);
 
-      mat zg;
+      XtildeMatAct = XtildeMat.cols(activeuvec-1);
       if (active2.length() == 0) {
-       // Rcout << "calculate tempXtilde" << tempXtilde <<std::endl;
-
-        zg = XtildeActMat.t() * tempyMinInter;
-       // zg = t(Xtilde[,active]) %*% (Y - intercept)
+        // Rcout << "calculate tempXtilde" << tempXtilde <<std::endl;
+        zg = XtildeMatAct.t() * tempyMinInter;
+        // zg = t(Xtilde[,active]) %*% (Y - intercept)
       } else if (active2.length() == 1) {
-        act2 = active2[0];
-        zg = XtildeActMat.t() * (tempyMinInter - XtildeAct2Mat * beta[act2]);
-       // zg = t(Xtilde[,active]) %*% (Y - intercept - Xtilde[,active2] * beta[active2])
+        act2int = active2[0];
+        zg = XtildeMatAct.t() * (tempyMinInter - XtildeMatAct2 * beta[act2int]);
+        // zg = t(Xtilde[,active]) %*% (Y - intercept - Xtilde[,active2] * beta[active2])
       } else {
-        //vec tempbeta = as<vec>(beta[active2-1]);
-        // Rcout << "calculate tempyMinInter" << tempyMinInter <<std::endl;
-       //  Rcout << "calculate XtildeAct2Mat" << XtildeAct2Mat<<std::endl;
-       //  Rcout << "betaAct2Vec"  <<betaAct2Vec<<std::endl;
-         betaAct2Vec = as<vec>(vector_subset_idx_rcpp2(beta, active2-1));
-         XtildeAct2Mat = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active2-1));
-        zg = XtildeActMat.t() * (tempyMinInter - XtildeAct2Mat * betaAct2Vec);
-       // zg = t(Xtilde[,active]) %*% (Y - intercept - Xtilde[,active2] %*% as.matrix(beta[active2]))
+        XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
+        betaVecAct2 = betaVec.elem(active2uvec-1);
+        zg = XtildeMatAct.t() * (tempyMinInter - XtildeMatAct2 * betaVecAct2);
+        // zg = t(Xtilde[,active]) %*% (Y - intercept - Xtilde[,active2] %*% as.matrix(beta[active2]))
       }
-     // Rcout << "calculate zg " << zg <<std::endl;
+      // Rcout << "calculate zg " << zg <<std::endl;
       NumericMatrix tempzg = wrap(zg);
       NumericVector zgvec = tempzg(_,0);
-   //   Rcout << "calculate zg " << zgvec <<std::endl;
+      //   Rcout << "calculate zg " << zgvec <<std::endl;
       double norm_zg = sqrt(sum(pow(zgvec, 2)));
-     // Rcout << "calculate norm_zg " << norm_zg <<std::endl;
-      NumericVector betaactive = vector_subset_idx_rcpp2(beta, active-1);
+      // Rcout << "calculate norm_zg " << norm_zg <<std::endl;
+      vec betaVecAct = betaVec.elem(activeuvec-1);
+      NumericVector betaactive = wrap(betaVecAct);
       //double tempLambda = lambdaStar(betaactive, lambda1, lambda0, theta);
       //Rcout << "update beta2 " << std::endl;
       double shrinkageLambda =  lambdaStar(betaactive, lambda1, lambda0, theta);
       double shrinkageTerm = (1/n) * (1 - sigmasq*shrinkageLambda/norm_zg);
       shrinkageTerm = shrinkageTerm*(1*(shrinkageTerm > 0));
-
       NumericVector tobeupdate = shrinkageTerm*zgvec*(1*(norm_zg > delta));
       //Rcout << " norm_zg " << norm_zg << std::endl;
-     // Rcout << " delta " << delta << std::endl;
-     // Rcout << "tobeupdate " << tobeupdate << std::endl;
-      beta = vector_assign_rcpp2(beta, tobeupdate, active-1);
+      // Rcout << " delta " << delta << std::endl;
+      // Rcout << "tobeupdate " << tobeupdate << std::endl;
+      betaVec.elem(activeuvec-1) = as<vec>(tobeupdate);
+      beta = wrap(betaVec);
     }
-   // Rcout << "update Z " << std::endl;
-   //Rcout << "active beyond" << active << std::endl;
-    NumericVector betaactive2 = vector_subset_idx_rcpp2(beta, active-1);
+    // Rcout << "update Z " << std::endl;
+    //Rcout << "active beyond" << active << std::endl;
+
     //Rcout << "betaactive2 " << betaactive2 << std::endl;
     //Rcout << "bool is " << as<bool>(any(betaactive2 != 0)) << std::endl;
-    Z[g] = as<bool>(any(betaactive2 != 0));
-    //Z[g] = tempBool[0];
-    //Rcout << "beta is " << beta << std::endl;
-    //Rcout << "betaOld is " << betaOld << std::endl;
-   // NumericVector bbb = beta - betaOld;
+    Z[g] = any(betaVec.elem(activeuvec-1) != 0);
     diff = sqrt(sum(pow((beta - betaOld),2)));
-   // Rcout << "beta is " << beta << std::endl;
-    //Rcout << "betaOld is " << betaOld << std::endl;
-  //  Rcout << "diff is " << diff << std::endl;
 
     if ((g+1) % M == 0) {
       //Rcout << "g%m " << ((g+1) % M == 0 )<< std::endl;
-  // Update theta
- // Rcout << "Update theta " << std::endl;
+      // Update theta
+      // Rcout << "Update theta " << std::endl;
       if (forceGroups.length() == 0) {
 
         NumericVector tempZ = wrap(Z);
@@ -304,30 +249,25 @@ List update(NumericVector Y, NumericMatrix Xtilde, NumericVector groups, Logical
         theta = (a + sum(tempZ)) / (a + b + G - forceGroups.length());
       }
 
-     // Rcout << "Update sigmasq " << std::endl;
+      // Rcout << "Update sigmasq " << std::endl;
       if (updateSigma) {
-        active2 = c_which2(beta != 0);
+        active2uvec = find(betaVec!=0)+1;
+        active2 = wrap(active2uvec);
         if (active2.length() == 0) {
           sigmasq = sum(pow(Y - intercept,2)) / (n + 2);
         } else if (active2.length() == 1) {
-          act2 = active2[0];
-          sigmasq = sum(pow((Y - Xtilde(_,act2) * beta[act2] - intercept), 2)) / (n + 2);
+          act2int = active2[0];
+          sigmasq = sum(pow((Y - Xtilde(_,act2int) * beta[act2int] - intercept), 2)) / (n + 2);
         } else {
-          mat tempXtilde = as<mat>(matrix_subset_idx_rcpp2(Xtilde, active2-1));
-          vec betaactive333 = as<vec>(vector_subset_idx_rcpp2(beta, active2-1));
-          //vec tempbeta = as<vec>(betaactive333);
-          mat tempMul = tempXtilde * betaactive333;
-          NumericMatrix temp = wrap(tempMul);
+          XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
+          betaVecAct2 = betaVec.elem(active2uvec-1);
+          NumericMatrix temp = wrap(XtildeMatAct2*betaVecAct2);
           sigmasq = sum(pow((Y - temp(_,0) - intercept), 2)) / (n + 2);
-         //  Rcout << "sigmasq " << sigmasq << std::endl;
+          //  Rcout << "sigmasq " << sigmasq << std::endl;
+          }
         }
-
       }
-    }
-   // Rcout << "=========== " << std::endl;
-  // if(g==0) break;
   }
-  //List L = List::create(3, 4);
   List L = List::create(Named("sigmasq") = sigmasq , _["beta"] = beta,
                         _["intercept"] = intercept, _["diff"] = diff,
                         _["lambda1"] = lambda1, _["lambda0"] = lambda0,
