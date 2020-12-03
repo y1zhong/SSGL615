@@ -1,34 +1,33 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 using namespace arma;
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
 
 
 // [[Rcpp::export]]
-LogicalVector c_betainact(
-    NumericVector beta, NumericVector active) {
+arma::uvec c_betainact(
+    arma::vec beta, arma::uvec active) {
 
-  int l = beta.length();
-  LogicalVector b0 = (beta != 0);
-  NumericVector blen(l);
-  blen = Range(1, l);
-  LogicalVector out;
-  for(unsigned int z = 0; z < l; z++) {
-    if(std::find(active.begin(), active.end(), blen[z]) == active.end()){
-      out.push_back(1);
-    } else{
-      out.push_back(0);
-    }
-  }
-  return (b0 & out);
+  int l = beta.size();
+  uvec b0 = find(beta != 0)+1;
+  uvec betalen = regspace<uvec>(1, l);
+  //uvec inter = intersect(betalen, active);
+  //Rcout << "The b0 is " << b0 << std::endl;
+  //Rcout << "The betalen is " << betalen<< std::endl;
+  //Rcout << "The inter beta active is " << inter << std::endl;
+
+  NumericVector activevec = wrap(active);
+  NumericVector betalenvec = wrap(betalen);
+  NumericVector dif = setdiff(betalenvec, activevec);
+  uvec different = as<uvec>(dif);
+  //Rcout << "The activevec is " << activevec << std::endl;
+ // Rcout << "The betalenvec is " << betalenvec << std::endl;
+ // Rcout << "The dif is " << dif << std::endl;
+  uvec interFi = intersect(b0, different);
+ // Rcout << "============= " << std::endl;
+ // Rcout << "The different is " << different << std::endl;
+ // Rcout << "The interFi is " << interFi << std::endl;
+
+  return (interFi);
 }
 
 
@@ -73,42 +72,44 @@ double c_gFunc(NumericVector beta, double lambda1, double lambda0,
 
 }
 
-
+//' @export
 // [[Rcpp::export]]
-List update(NumericVector Y, NumericMatrix Xtilde, NumericVector groups, LogicalVector updateSigma,
-            double sigmasq, NumericVector beta, double intercept, double lambda0_base,
-            double lambda1, double lambda0, NumericVector betaOld, double a, double b, int M,
+List update(arma::vec Y, arma::mat Xtilde, arma::vec groups, LogicalVector& updateSigma,
+            double sigmasq, arma::vec betaa, double intercept, double lambda0_base,
+            double lambda1, double lambda0, arma::vec betaOld, double a, double b, int M,
             LogicalVector Z, double theta, int G, IntegerVector forceGroups, double n){
   //Rcout << "The begin " << std::endl;
   //mat Ymat = as<mat>(Y);
   //Rcout << "The Y is " << Ymat << std::endl;
-  beta = clone(beta);
-  NumericVector yResid;
+  vec beta = betaa;
+  vec yResid;
 
   int act2int;
   double diff;
   double delta;
 
-  vec betaVec = as<vec>(beta);
+  //vec beta;
   vec betaVecAct2;
 
+  //uvec active2uvec;
+  //uvec activeuvec;
   uvec active2uvec;
-  uvec activeuvec;
+  uvec active2;
+  uvec active;
+ // NumericVector active;
+ // NumericVector active2;
 
-  NumericVector active;
-  NumericVector active2;
-
-  mat XtildeMat = as<mat>(Xtilde);
+ // mat XtildeMat = as<mat>(Xtilde);
   mat XtildeMatAct;
   mat XtildeMatAct2;
   mat zg;
 
-  NumericMatrix XtildeBeta;
+  mat XtildeBeta;
 
   for(int g = 0; g < G; g++){
     //Rcout << "The g is " << g << std::endl;
-    active2uvec = find(betaVec!=0)+1;
-    active2 = wrap(active2uvec);
+    active2 = find(beta!=0)+1;
+    //active2 = wrap(active2uvec);
     //Rcout << "The active2 is " << active2 << std::endl;
 
    // Col id = as<Col>(active2);
@@ -116,52 +117,53 @@ List update(NumericVector Y, NumericMatrix Xtilde, NumericVector groups, Logical
 
     /////////////////////Intercept//////////////////////
     //Rcout << "The active2 is " << active2 << std::endl;
-    if (active2.length() == 0) {
+    if (active2.size() == 0) {
       intercept = mean(Y);
-    } else if (active2.length() == 1) {
-      act2int = active2[0];
-      intercept = mean(Y - Xtilde(_,act2int) * beta[act2int]);
+    } else if (active2.size() == 1) {
+      act2int = active2(0);
+      intercept = mean(Y - Xtilde.col(act2int) * beta(act2int));
     } else {
-      XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
-      betaVecAct2 = betaVec.elem(active2uvec-1);
-      XtildeBeta= wrap(XtildeMatAct2 * betaVecAct2);
-      intercept = mean(Y - XtildeBeta(_,0));
+      XtildeMatAct2 = Xtilde.cols(active2-1);
+      betaVecAct2 = beta.elem(active2-1);
+      XtildeBeta= XtildeMatAct2 * betaVecAct2;
+      intercept = mean(Y - XtildeBeta.col(0));
     }
 
     // which parameters refer to this group
-    activeuvec = find(as<vec>(groups)==(g+1))+1;
-    active = wrap(activeuvec);
+    active = find(groups==(g+1))+1;
+    //active = wrap(activeuvec);
     //Rcout << "The active is " << active << std::endl;
-    int m = active.length();
+    int m = active.size();
     lambda0 = sqrt(m) * lambda0_base;
     //Rcout << "The lambda0 is " << lambda0 << std::endl;
 
     if ( std::find(forceGroups.begin(), forceGroups.end(), (g+1)) != forceGroups.end() ) {
-      LogicalVector v = c_betainact(beta, active);
-      uvec active2uvec = find(as<vec>(v))+1;
-      active2 = wrap(active2uvec);
-      if (active2.length() == 0) {
+     // active2uvec = c_betainact(beta, active);
+     // active2 = find(active2uvec==1)+1;
+      active2 = c_betainact(beta, active);
+      //active2 = wrap(active2uvec);
+      if (active2.size() == 0) {
         yResid = Y - intercept;
-      } else if (active2.length() == 1) {
-        act2int = active2[0];
-        yResid = Y - intercept - Xtilde(_,act2int) * beta[act2int];
+      } else if (active2.size() == 1) {
+        act2int = active2(0);
+        yResid = Y - intercept - Xtilde.col(act2int) * beta(act2int);
       } else {
-        XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
-        betaVecAct2 = betaVec.elem(active2uvec-1);
-        XtildeBeta= wrap(XtildeMatAct2 * betaVecAct2);
-        yResid = Y - intercept - XtildeBeta(_,0);
+        XtildeMatAct2 = Xtilde.cols(active2-1);
+        betaVecAct2 = beta.elem(active2-1);
+        XtildeBeta= XtildeMatAct2 * betaVecAct2;
+        yResid = Y - intercept - XtildeBeta.col(0);
       }
       //Rcout << "update Beta1 " << std::endl;
-      XtildeMatAct = XtildeMat.cols(activeuvec-1);
+      XtildeMatAct = Xtilde.cols(active-1);
       //Rcout << "tempXtildecrossp " << std::endl;
       mat XtildeMatActCrossInv = inv(XtildeMatAct.t() * XtildeMatAct);
       // Rcout << "tempXtildeyRes" << std::endl;
-      mat XildeMatActyResid = XtildeMatAct.t() * as<vec>(yResid);
+      mat XildeMatActyResid = XtildeMatAct.t() * yResid;
       //Rcout << "tempupdate" << std::endl;
       mat tempupdate = XtildeMatActCrossInv * XildeMatActyResid;
       vec betatobeupdate = tempupdate.col(0);
-      betaVec.elem(activeuvec-1) = betatobeupdate;
-      beta = wrap(betaVec);
+      beta.elem(active-1) = betatobeupdate;
+      //beta = wrap(betaVec);
     } else {
       //Calculate delta for this size of a group
       //Rcout << "call gFunc " << std::endl;
@@ -179,57 +181,61 @@ List update(NumericVector Y, NumericMatrix Xtilde, NumericVector groups, Logical
       }
 
       //////////////////Calculate necessary quantities/////////////
-     //  Rcout << "The delta is " << delta << std::endl;
-      LogicalVector v = c_betainact(beta, active);
-      uvec active2uvec = find(as<vec>(v))+1;
-      active2 = wrap(active2uvec);
-      //Rcout << "The active2 is " << active2 << std::endl;
+       //Rcout << "The delta is " << delta << std::endl;
+      //uvec active2uvec = c_betainact(beta, active);
+      //active2 = find(active2uvec==1)+1;
+      active2 = c_betainact(beta, active);
+     // active2 = wrap(active2uvec);
+     // Rcout << "The active2 is " << active2 << std::endl;
 
-      NumericVector yMinInter = Y - intercept;
+      //NumericVector yMinInter = Y - intercept;
       //Rcout << "calculate yMinInter " << yMinInter <<std::endl;
-      vec tempyMinInter = as<vec>(yMinInter);
-
-      XtildeMatAct = XtildeMat.cols(activeuvec-1);
-      if (active2.length() == 0) {
+      vec tempyMinInter = Y - intercept;
+      XtildeMatAct = Xtilde.cols(active-1);
+     // Rcout << "The active is " << active << std::endl;
+     // Rcout << "zgnext "  <<std::endl;
+      if (active2.size() == 0) {
         // Rcout << "calculate tempXtilde" << tempXtilde <<std::endl;
         zg = XtildeMatAct.t() * tempyMinInter;
         // zg = t(Xtilde[,active]) %*% (Y - intercept)
-      } else if (active2.length() == 1) {
-        act2int = active2[0];
-        zg = XtildeMatAct.t() * (tempyMinInter - XtildeMatAct2 * beta[act2int]);
+      } else if (active2.size()  == 1) {
+        act2int = active2(0);
+        zg = XtildeMatAct.t() * (tempyMinInter - XtildeMatAct2 * beta(act2int));
         // zg = t(Xtilde[,active]) %*% (Y - intercept - Xtilde[,active2] * beta[active2])
       } else {
-        XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
-        betaVecAct2 = betaVec.elem(active2uvec-1);
+        XtildeMatAct2 = Xtilde.cols(active2-1);
+        betaVecAct2 = beta.elem(active2-1);
         zg = XtildeMatAct.t() * (tempyMinInter - XtildeMatAct2 * betaVecAct2);
         // zg = t(Xtilde[,active]) %*% (Y - intercept - Xtilde[,active2] %*% as.matrix(beta[active2]))
       }
       // Rcout << "calculate zg " << zg <<std::endl;
-      NumericMatrix tempzg = wrap(zg);
-      NumericVector zgvec = tempzg(_,0);
+      //NumericMatrix tempzg = wrap(zg);
+      //NumericVector zgvec = tempzg(_,0);// [[Rcpp::export]]
+      mat zgsquare = pow(zg, 2);
+      vec zgvec = zgsquare.col(0);
       //   Rcout << "calculate zg " << zgvec <<std::endl;
-      double norm_zg = sqrt(sum(pow(zgvec, 2)));
+      double norm_zg = sqrt(sum(zgvec));
       // Rcout << "calculate norm_zg " << norm_zg <<std::endl;
-      vec betaVecAct = betaVec.elem(activeuvec-1);
+      vec betaVecAct = beta.elem(active-1);
       NumericVector betaactive = wrap(betaVecAct);
       //double tempLambda = lambdaStar(betaactive, lambda1, lambda0, theta);
-      //Rcout << "update beta2 " << std::endl;
+     // Rcout << "update beta2 " << std::endl;
       double shrinkageLambda =  lambdaStar(betaactive, lambda1, lambda0, theta);
       double shrinkageTerm = (1/n) * (1 - sigmasq*shrinkageLambda/norm_zg);
       shrinkageTerm = shrinkageTerm*(1*(shrinkageTerm > 0));
-      NumericVector tobeupdate = shrinkageTerm*zgvec*(1*(norm_zg > delta));
+      vec tobeupdate = shrinkageTerm*(zg.col(0))*(1*(norm_zg > delta));
       //Rcout << " norm_zg " << norm_zg << std::endl;
       // Rcout << " delta " << delta << std::endl;
       // Rcout << "tobeupdate " << tobeupdate << std::endl;
-      betaVec.elem(activeuvec-1) = as<vec>(tobeupdate);
-      beta = wrap(betaVec);
+      beta.elem(active-1) = (tobeupdate);
+      //beta = wrap(betaVec);
     }
     // Rcout << "update Z " << std::endl;
     //Rcout << "active beyond" << active << std::endl;
 
     //Rcout << "betaactive2 " << betaactive2 << std::endl;
     //Rcout << "bool is " << as<bool>(any(betaactive2 != 0)) << std::endl;
-    Z[g] = any(betaVec.elem(activeuvec-1) != 0);
+    Z[g] = any(beta.elem(active-1) != 0);
     diff = sqrt(sum(pow((beta - betaOld),2)));
 
     if ((g+1) % M == 0) {
@@ -251,22 +257,24 @@ List update(NumericVector Y, NumericMatrix Xtilde, NumericVector groups, Logical
 
       // Rcout << "Update sigmasq " << std::endl;
       if (updateSigma) {
-        active2uvec = find(betaVec!=0)+1;
-        active2 = wrap(active2uvec);
-        if (active2.length() == 0) {
+        active2 = find(beta!=0)+1;
+        //active2 = wrap(active2uvec);
+        if (active2.size() == 0) {
           sigmasq = sum(pow(Y - intercept,2)) / (n + 2);
-        } else if (active2.length() == 1) {
+        } else if (active2.size() == 1) {
           act2int = active2[0];
-          sigmasq = sum(pow((Y - Xtilde(_,act2int) * beta[act2int] - intercept), 2)) / (n + 2);
+          sigmasq = sum(pow((Y - Xtilde.col(act2int)* beta(act2int) - intercept), 2)) / (n + 2);
         } else {
-          XtildeMatAct2 = XtildeMat.cols(active2uvec-1);
-          betaVecAct2 = betaVec.elem(active2uvec-1);
-          NumericMatrix temp = wrap(XtildeMatAct2*betaVecAct2);
-          sigmasq = sum(pow((Y - temp(_,0) - intercept), 2)) / (n + 2);
+          XtildeMatAct2 = Xtilde.cols(active2-1);
+          betaVecAct2 = beta.elem(active2-1);
+          mat temp = XtildeMatAct2*betaVecAct2;
+          sigmasq = sum(pow((Y - temp.col(0) - intercept), 2)) / (n + 2);
           //  Rcout << "sigmasq " << sigmasq << std::endl;
           }
         }
       }
+   // Rcout << "===============" << std::endl;
+  //  if(g==1) break;
   }
   List L = List::create(Named("sigmasq") = sigmasq , _["beta"] = beta,
                         _["intercept"] = intercept, _["diff"] = diff,
