@@ -256,7 +256,7 @@ List update(arma::vec Y, arma::mat Xtilde, arma::vec groups, LogicalVector& upda
       }
 
       // Rcout << "Update sigmasq " << std::endl;
-      if (updateSigma) {
+      if (updateSigma(0) == 1) {
         active2 = find(beta!=0)+1;
         //active2 = wrap(active2uvec);
         if (active2.size() == 0) {
