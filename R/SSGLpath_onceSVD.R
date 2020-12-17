@@ -29,6 +29,7 @@ SSGLpath_onceSVD = function(Y, X, lambda1, lambda0, G,
 
 
   ## pre-standardize matrix
+  n = length(Y)
   Xstar <- c_Xstar(X)
   Xtilde_list <- c_Xtilde(Xstar, groups, G, n)
   Xtilde <- Xtilde_list$Xnew
