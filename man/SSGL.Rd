@@ -2,7 +2,8 @@
 % Please edit documentation in R/SSGL.R
 \name{SSGL}
 \alias{SSGL}
-\title{A function to pergorm ssgl algorithm}
+\title{A function to perform ssgl algorithm
+with only rcpp reimplementation}
 \usage{
 SSGL(
   Y,
@@ -23,5 +24,6 @@ SSGL(
 )
 }
 \description{
-A function to pergorm ssgl algorithm
+A function to perform ssgl algorithm
+with only rcpp reimplementation
 }

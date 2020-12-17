@@ -1,11 +1,10 @@
 Package: SSGL615
 Type: Package
-Title: What the Package Does (Title Case)
+Title: This package is an improved version in terms of computational effiency based on the original SSGL algorithm
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Yuan Zhong, Yilei Zhang
+Maintainer: The package maintainer <ylzhong@umich.edu>
+Description: This package improves the linear parametric algorithm on spike-and-slab group lasso algorithm. It includes the ssgl and ssglpath functions with partial re-implementation of rcpp and algorithm re-structure.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

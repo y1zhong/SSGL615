@@ -1,4 +1,5 @@
-#' A function to pergorm ssgl algorithm
+#' A function to perform ssgl algorithm
+#' with only rcpp reimplementation
 #' @importFrom Rcpp sourceCpp
 #' @import RcppArmadillo
 #' @useDynLib SSGL615
@@ -151,7 +152,8 @@ while(diff > error & counter < 300) {
   return(l)
 }
 
-
+#' The complete path functions calls the
+#' partial improved ssgl
 #' @importFrom Rcpp sourceCpp
 #' @import RcppArmadillo
 #' @export

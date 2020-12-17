@@ -1,7 +1,17 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 using namespace arma;
+
 // [[Rcpp::depends(RcppArmadillo)]]
+
+//' re-standardize the centered X matrix
+//' @param Xstar centered numeric matrix
+//' @param group vector group index
+//' @param beta estimated parameters
+//' @param Qmat,Dvec SVD results
+//' @param G number of groups
+//' @param n length of subjects
+//' @return A standardized matrix
 // [[Rcpp::export]]
 arma::mat c_betaSD(arma::mat Xstar, arma::vec groups, arma::vec beta,
              List Qmat, List Dvec, int G, int n){
