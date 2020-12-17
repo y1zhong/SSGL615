@@ -1,14 +1,17 @@
+### C++ version with SVD adjusted
 #' @importFrom Rcpp sourceCpp
 #' @import RcppArmadillo
-SSGL <- function(Y, X, lambda1, lambda0, groups,
-                 a = 1, b = length(unique(groups)),
-                 updateSigma = TRUE,
-                 M = 10, error = 0.001,
-                 betaStart = rep(0, dim(X)[2]),
-                 sigmasqStart,
-                 theta,
-                 printWarnings = TRUE,
-                 forceGroups = numeric()) {
+#' @export
+#' @return A list of results from ssgl algorithm
+SSGL_noSVD <- function(Y, X, Xstar, Xtilde, Qmat, Dvec, lambda1, lambda0, groups,
+                       a = 1, b = length(unique(groups)),
+                       updateSigma = TRUE,
+                       M = 10, error = 0.001,
+                       betaStart = rep(0, dim(X)[2]),
+                       sigmasqStart,
+                       theta,
+                       printWarnings = TRUE,
+                       forceGroups = numeric()) {
 
   G = length(unique(groups))
   p = length(groups)
@@ -27,15 +30,6 @@ SSGL <- function(Y, X, lambda1, lambda0, groups,
     sigmasqStart <- sqrt(df * ncp / (df + 2))
   }
 
- # library(Rcpp)
-  #sourceCpp('src/c_Xstar.cpp')
-  Xstar <- c_Xstar(X)
-
-  #sourceCpp('src/Xtilde.cpp')
-  Xtilde_list <- c_Xtilde(Xstar, groups, G, n)
-  Xtilde <- Xtilde_list$Xnew
-  Qmat <- Xtilde_list$Qmat
-  Dvec <- Xtilde_list$Dvec
 
   converged=TRUE
 
@@ -56,16 +50,16 @@ SSGL <- function(Y, X, lambda1, lambda0, groups,
   #forceGroups = numeric()
   #sourceCpp('src/update.cpp')
 
-while(diff > error & counter < 300) {
+  while(diff > error & counter < 300) {
 
     ## Store an old beta so we can check for convergence at the end
-   # betaOld = beta
-   betaOld = beta
+    # betaOld = beta
+    betaOld = beta
 
-   l_update <- update( Y, Xtilde, groups, updateSigma,
-                 sigmasq, beta,  intercept, lambda0_base,
-                 lambda1, lambda0, betaOld, a, b, M,
-                 Z, theta, G, forceGroups, n)
+    l_update <- update( Y, Xtilde, groups, updateSigma,
+                        sigmasq, beta,  intercept, lambda0_base,
+                        lambda1, lambda0, betaOld, a, b, M,
+                        Z, theta, G, forceGroups, n)
 
 
     beta = l_update$beta
@@ -75,8 +69,8 @@ while(diff > error & counter < 300) {
     lambda0 = l_update$lambda0
     theta = l_update$theta
     Z = l_update$Z
-#cat('beta:', beta)
-     ## Check to make sure algorithm doesn't explode for values of lambda0 too small
+    #cat('beta:', beta)
+    ## Check to make sure algorithm doesn't explode for values of lambda0 too small
     active2 = which(beta != 0)
     if (length(active2) == 0) {
       tempSigSq = sum((Y - intercept)^2) / (n + 2)
@@ -116,7 +110,7 @@ while(diff > error & counter < 300) {
     }
 
     counter = counter + 1
-}
+  }
 
 
   betaSD = c_betaSD(Xstar, groups, beta, Qmat, Dvec, G, n)
@@ -141,7 +135,9 @@ while(diff > error & counter < 300) {
   } else {
     sigmasq = sum((Y - X[,active2] %*% as.matrix(betaSD[active2]) - interceptSD)^2) / (n + 2)
   }
-  l = list(beta = betaSD, betaStart = betaStart, theta=theta, sigmasqStart = sigmasqStart,
+
+
+  l = list(beta = as.numeric(betaSD), betaStart = as.numeric(betaStart), theta=theta, sigmasqStart = sigmasqStart,
            sigmasq=sigmasq, intercept=interceptSD, nIter = counter,
            converged = converged)
 
