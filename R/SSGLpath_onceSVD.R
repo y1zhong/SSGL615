@@ -15,7 +15,7 @@
 #' @import RcppArmadillo
 #' @export
 #' @return A list of results from ssgl path algorithm
-SSGLpath_onceSVD = function(Y, X, lambda1, lambda0,
+SSGLpath_onceSVD = function(Y, X, lambda1, lambda0,G,
                             lambda0seq = seq(lambda1, lambda0, length=20),groups,
                             a = 1, b = length(unique(groups)),
                             M = 10, error = 0.001,
