@@ -1,6 +1,7 @@
 #' A function to pergorm ssgl algorithm
 #' @importFrom Rcpp sourceCpp
 #' @import RcppArmadillo
+#' @useDynLib SSGL615
 #' @export
 SSGL <- function(Y, X, lambda1, lambda0, groups,
                  a = 1, b = length(unique(groups)),
