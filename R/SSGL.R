@@ -1,4 +1,7 @@
 #' A function to pergorm ssgl algorithm
+#' @importFrom Rcpp sourceCpp
+#' @import RcppArmadillo
+#' @export
 SSGL <- function(Y, X, lambda1, lambda0, groups,
                  a = 1, b = length(unique(groups)),
                  updateSigma = TRUE,
@@ -148,7 +151,9 @@ while(diff > error & counter < 300) {
 }
 
 
-
+#' @importFrom Rcpp sourceCpp
+#' @import RcppArmadillo
+#' @export
 SSGLpath = function(Y, X, lambda1, lambda0, G,
                     lambda0seq = seq(lambda1, lambda0, length=20),groups,
                     a = 1, b = length(unique(groups)),
