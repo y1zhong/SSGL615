@@ -5,6 +5,7 @@
 #' @param X a matrix of predictors
 #' @param lambda1 inital value of lambda1
 #' @param lambda0 inital value of lambda0
+#' @param G integer value
 #' @param lambda0seq sequence from lambda0 to lambda1
 #' @param a,b default parameter setup
 #' @param M default is 10
@@ -15,7 +16,7 @@
 #' @import RcppArmadillo
 #' @export
 #' @return A list of results from ssgl path algorithm
-SSGLpath_onceSVD = function(Y, X, lambda1, lambda0,G,
+SSGLpath_onceSVD = function(Y, X, lambda1, lambda0, G,
                             lambda0seq = seq(lambda1, lambda0, length=20),groups,
                             a = 1, b = length(unique(groups)),
                             M = 10, error = 0.001,

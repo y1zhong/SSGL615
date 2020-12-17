@@ -10,6 +10,7 @@ SSGLpath_onceSVD(
   X,
   lambda1,
   lambda0,
+  G,
   lambda0seq = seq(lambda1, lambda0, length = 20),
   groups,
   a = 1,
@@ -27,6 +28,8 @@ SSGLpath_onceSVD(
 \item{lambda1}{inital value of lambda1}
 
 \item{lambda0}{inital value of lambda0}
+
+\item{G}{integer value}
 
 \item{lambda0seq}{sequence from lambda0 to lambda1}
 
