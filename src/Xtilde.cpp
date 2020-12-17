@@ -1,7 +1,8 @@
+// [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 using namespace arma;
-// [[Rcpp::depends(RcppArmadillo)]]
+
 // [[Rcpp::export]]
 List c_Xtilde(arma::mat Xstar, arma::vec groups, int G, int n){
 

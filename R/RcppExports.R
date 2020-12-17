@@ -9,6 +9,9 @@ c_betaSD <- function(Xstar, groups, beta, Qmat, Dvec, G, n) {
     .Call('_SSGL615_c_betaSD', PACKAGE = 'SSGL615', Xstar, groups, beta, Qmat, Dvec, G, n)
 }
 
+#' Center X matrix by column
+#'
+#' @param Xs input numeric matrix
 c_Xstar <- function(Xs) {
     .Call('_SSGL615_c_Xstar', PACKAGE = 'SSGL615', Xs)
 }
