@@ -1,4 +1,19 @@
 ### C++ version with SVD adjusted
+#' A function to pergorm fast ssgl algorithm
+#'
+#' @param Y a vector of response variable
+#' @param X a matrix of predictors
+#' @param lambda0 inital value of lambda
+#' @param groups a vector indicting the group number
+#' @param a,b default parameter setup
+#' @param updateSigma T/F indicating to update sigma value
+#' @param M default is 10
+#' @param error numeric value for tolerance
+#' @param betaStart vector default set to all 0
+#' @param sigmasqStart updated value through loop
+#' @param theta initial theta value
+#' @param forceGroups a vector indicating index to force into same group
+#'
 #' @importFrom Rcpp sourceCpp
 #' @import RcppArmadillo
 #' @export

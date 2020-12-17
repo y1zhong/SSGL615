@@ -2,35 +2,35 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 c_Xtilde <- function(Xstar, groups, G, n) {
-    .Call(`_SSGL615_c_Xtilde`, Xstar, groups, G, n)
+    .Call('_SSGL615_c_Xtilde', PACKAGE = 'SSGL615', Xstar, groups, G, n)
 }
 
 c_betaSD <- function(Xstar, groups, beta, Qmat, Dvec, G, n) {
-    .Call(`_SSGL615_c_betaSD`, Xstar, groups, beta, Qmat, Dvec, G, n)
+    .Call('_SSGL615_c_betaSD', PACKAGE = 'SSGL615', Xstar, groups, beta, Qmat, Dvec, G, n)
 }
 
 c_Xstar <- function(Xs) {
-    .Call(`_SSGL615_c_Xstar`, Xs)
+    .Call('_SSGL615_c_Xstar', PACKAGE = 'SSGL615', Xs)
 }
 
 c_betainact <- function(beta, active) {
-    .Call(`_SSGL615_c_betainact`, beta, active)
+    .Call('_SSGL615_c_betainact', PACKAGE = 'SSGL615', beta, active)
 }
 
 psi <- function(beta, lambda) {
-    .Call(`_SSGL615_psi`, beta, lambda)
+    .Call('_SSGL615_psi', PACKAGE = 'SSGL615', beta, lambda)
 }
 
 pStar <- function(beta, lambda1, lambda0, theta) {
-    .Call(`_SSGL615_pStar`, beta, lambda1, lambda0, theta)
+    .Call('_SSGL615_pStar', PACKAGE = 'SSGL615', beta, lambda1, lambda0, theta)
 }
 
 c_gFunc <- function(beta, lambda1, lambda0, theta, sigmasq, n) {
-    .Call(`_SSGL615_c_gFunc`, beta, lambda1, lambda0, theta, sigmasq, n)
+    .Call('_SSGL615_c_gFunc', PACKAGE = 'SSGL615', beta, lambda1, lambda0, theta, sigmasq, n)
 }
 
 #' @export
 update <- function(Y, Xtilde, groups, updateSigma, sigmasq, betaa, intercept, lambda0_base, lambda1, lambda0, betaOld, a, b, M, Z, theta, G, forceGroups, n) {
-    .Call(`_SSGL615_update`, Y, Xtilde, groups, updateSigma, sigmasq, betaa, intercept, lambda0_base, lambda1, lambda0, betaOld, a, b, M, Z, theta, G, forceGroups, n)
+    .Call('_SSGL615_update', PACKAGE = 'SSGL615', Y, Xtilde, groups, updateSigma, sigmasq, betaa, intercept, lambda0_base, lambda1, lambda0, betaOld, a, b, M, Z, theta, G, forceGroups, n)
 }
 

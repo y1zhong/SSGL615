@@ -13,3 +13,4 @@ Imports: Rcpp (>= 1.0.5),
     RcppArmadillo
 LinkingTo: Rcpp,
     RcppArmadillo
+RoxygenNote: 7.1.1
